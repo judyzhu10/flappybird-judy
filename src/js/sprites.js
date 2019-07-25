@@ -8,13 +8,10 @@ SpriteSheetArtist = function (spritesheet, cells) {
 SpriteSheetArtist.prototype = {
   paint: function (sprite, context) {
     var cell = this.cells[this.cellIndex];
-    context.save();
-    context.rotate(sprite.rotation);
     context.drawImage(this.spritesheet, cell.left, cell.top,
       cell.width, cell.height,
       sprite.left, sprite.top,
       cell.width, cell.height);
-    context.restore();
   },
 
   advance: function () {

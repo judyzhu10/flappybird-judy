@@ -7,13 +7,17 @@
   const canvasDom = document.getElementById('canvas');
   const canvasWidth = canvasDom.width;
   const canvasHeight = canvasDom.height;
+  const restartDom = document.getElementById('restart');
+  const guideDom = document.getElementById('guide');
+  
+  restartDom.addEventListener('click', handleRestart);
 
 
   const BACK_GROUND_VELOCITY  = 300;
 
-  const ctx = canvasDom.getContext('2d');
+  // const ctx = canvasDom.getContext('2d');
 
-  const imgList = ['./images/bg.png', './images/ground.png', './images/holdback.png', './images/bird.png'];
+  const imgList = ['./src/images/bg.png', './src/images/ground.png', './src/images/holdback.png', './src/images/bird.png'];
 
   imgList.forEach(function(item) {
     game.queueImage(item);
@@ -28,10 +32,6 @@
 
   // 图片宽高
   var bgImageWidth, bgImageHeight, groundImageWidth, groundImageHeight, groundImageY;
-
-  var backgroundOffsetX = 0;
-
-  var hoseOffsetX = 0;
 
   var FLY_ANIMATION_RATE = 30;
 
@@ -51,6 +51,7 @@
 
   var BIRD_WIDTH = 87;
   var BIRD_HEIGHT = 60;
+  var BIRD_LEFT = 80;
 
   var score = 0;
 
@@ -61,6 +62,7 @@
   game.context.font = FONT;
   game.context.fillStyle = 'black';
   game.context.strokeStyle = 'while';
+  game.startFly = false;
 
 
   var birdCells = [
@@ -85,7 +87,19 @@
   // const handleTimeupdate = (timeupdate) => {
   //
   // }
-
+  
+  // 游戏重新开始
+  
+  function handleRestart() {
+    restartDom.style.display = 'none';
+    guideDom.style.display = 'block';
+    game.startFly = false;
+    score = 0;
+    initGround();
+    initBirdSprite();
+    initHosesSprite();
+  }
+  
   // 绘制背景图片
   function paintBackGround () {
     game.context.drawImage(bgImage, 0, 0, bgImageWidth, bgImageHeight, 0, 0, canvasWidth, canvasHeight);
@@ -105,10 +119,10 @@
       const diffTime = time - game.lastTime;
       const stretch = diffTime * BACK_GROUND_VELOCITY / 1000;
 
-      backgroundOffsetX += stretch;
+       sprite.backgroundOffsetX += stretch;
 
-      if (backgroundOffsetX > canvasWidth) {
-        backgroundOffsetX = 0;
+      if (sprite.backgroundOffsetX > canvasWidth) {
+        sprite.backgroundOffsetX = 0;
       }
     }
   }
@@ -117,7 +131,7 @@
     paint: function (sprite, ctx) {
       // 下水管
       ctx.save();
-      ctx.translate(- backgroundOffsetX, 0);
+      ctx.translate(- sprite.backgroundOffsetX, 0);
       ctx.drawImage(groundImage, 0, 0, groundImageWidth, groundImageHeight, 0, groundImageY, canvasWidth, groundImageHeight);
       ctx.drawImage(groundImage, 0, 0, groundImageWidth, groundImageHeight, canvasWidth, groundImageY, canvasWidth, groundImageHeight);
       ctx.restore();
@@ -127,10 +141,10 @@
 
   // FIXME 此处的管子高度可能有问题
   var paintHose = {
-    paint: function (sprite, context) {
+    paint: function (sprite, ctx) {
       ctx.rect(0, 0, 20, 20);
       ctx.save();
-      ctx.translate(- hoseOffsetX, 0);
+      ctx.translate(- hosesSprite.hoseOffsetX, 0);
       // 上水管
       ctx.drawImage(hoseImage, HOSE_UP_RECT[0], HOSE_UP_RECT[1], HOSE_UP_RECT[2], - sprite.height.upY, sprite.left, sprite.top, sprite.width, sprite.height.upY);
       // 下水管
@@ -140,8 +154,8 @@
   }
 
   // 判断水管是否在视窗外
-  function isHoseInView (hoseSprint) {
-      if ((hoseSprint.left + hoseSprint.width) < hoseOffsetX) {
+  function isHoseInView (hoseSprint, sprite) {
+      if ((hoseSprint.left + hoseSprint.width) < sprite.hoseOffsetX) {
         return false
       }
       return true
@@ -166,13 +180,14 @@
   var updateHoses = {
 
     execute: function (sprite, ctx, time) {
-      if (game.lastTime === 0 || birdSprite.isDead) return
+      if (game.lastTime === 0 || birdSprite.isDead || !game.startFly) return
       const diffTime = time - game.lastTime;
       const stretch = diffTime * BACK_GROUND_VELOCITY / 1000;
 
-      hoseOffsetX += stretch;
+      sprite.hoseOffsetX += stretch;
 
-      if (!isHoseInView(hoseSpriteList[0])) {
+      if (!isHoseInView(hoseSpriteList[0], sprite)) {
+        score++;
         var outHose = hoseSpriteList.shift();
         outHose.left = outHose.left + hoseBoxWidth * numHoses;
         outHose.height = randomHeight();
@@ -210,7 +225,7 @@
 
   var jumpBehavior = {
     execute: function (sprite, ctx, time) {
-      if (sprite.isDead) return
+      if (sprite.isDead || !game.startFly) return
       var animationTime = (time - sprite.lastUpAnimation);
       var distance = sprite.initVelocity * animationTime - 0.5 * sprite.gravity * animationTime * animationTime;
       var y = sprite.flyStartY - distance;
@@ -236,7 +251,7 @@
 
   var fallBehavior = {
     execute: function (sprite, ctx, time) {
-      if (!sprite.isDead) return
+      if (!sprite.isDead || !game.startFly) return
       var animationTime = (time - sprite.lastUpAnimation);
       var distance = - 0.5 * sprite.gravity * animationTime * animationTime;
       var y = sprite.flyStartY - distance;
@@ -244,6 +259,7 @@
       // FIXME 旋转还有点问题
       if (y > groundImageY) {
         sprite.top = groundImageY;
+        restartDom.style.display = 'block';
       } else {
         sprite.top = y;
       }
@@ -264,9 +280,9 @@
 
 
     execute: function (sprite, ctx, time) {
-      if (sprite.isDead) return
+      if (sprite.isDead || !game.startFly) return
       var hoseSprite = hoseSpriteList[0];
-      var hoseSpriteLeft = hoseSprite.left - hoseOffsetX;
+      var hoseSpriteLeft = hoseSprite.left - hosesSprite.hoseOffsetX;
       var spriteRect = { left: sprite.left, top: sprite.top, width: sprite.width, height: sprite.height };
       var upHoseRect = { left: hoseSpriteLeft , top: hoseSprite.top, width: hoseSprite.width, height: hoseSprite.height.upY };
       var downHoseRect = { left: hoseSpriteLeft, top: hoseSprite.height.downY, width: hoseSprite.width, height: groundImageY - hoseSprite.height.downY };
@@ -295,9 +311,6 @@
   var birdSprite = new Sprite('birdSprite', new SpriteSheetArtist(birdImage, birdCells), [flyBehavior, jumpBehavior, collideBehavior, fallBehavior]);
 
 
-  // 将精灵对象加入游戏引擎队列
-  game.addSprite(groundSprite);
-
   game.paintUnderSprites = function() {
     paintBackGround();
   }
@@ -310,7 +323,13 @@
 
   game.start();
 
-  function createHosesSprite() {
+  function initGround() {
+    groundSprite.backgroundOffsetX = 0;
+  }
+
+  function initHosesSprite() {
+    hoseSpriteList = [];
+    hosesSprite.hoseOffsetX = 0;
     for (var i = 0; i < numHoses; i++) {
       var name = 'hose' + i;
       var hoseSprite = new Sprite(name, paintHose);
@@ -321,10 +340,9 @@
       hoseSprite.top = 0;
       hoseSpriteList.push(hoseSprite);
     }
-    game.addSprite(hosesSprite);
   }
 
-  function createBirdSprite() {
+  function initBirdSprite() {
     birdSprite.width = BIRD_WIDTH;
     birdSprite.height = BIRD_HEIGHT;
     birdSprite.flyAnimationRate = FLY_ANIMATION_RATE;
@@ -334,7 +352,7 @@
     birdSprite.flyStartY = groundImageY / 2;
     birdSprite.isDead = false;
     birdSprite.top = birdSprite.flyStartY;
-    birdSprite.left = 80;
+    birdSprite.left = BIRD_LEFT;
     birdSprite.lastUpAnimation = game.getTime();
     birdSprite.jump = function () {
       this.lastUpAnimation = game.getTime();
@@ -342,20 +360,32 @@
       // this.rotation = 20 * Math.PI / 180;
       this.flyStartY = this.top;
     }
+  }
+
+  function createHosesSprite() {
+    initHosesSprite();
+    game.addSprite(hosesSprite);
+  }
+
+  function createBirdSprite() {
+    initBirdSprite();
     game.addSprite(birdSprite);
+  }
+
+  function createGroundSprite() {
+    initGround();
+    game.addSprite(groundSprite);
   }
 
   function handleBirdDead(sprite) {
     sprite.isDead = true;
     sprite.lastUpAnimation = game.getTime();
     sprite.flyStartY = sprite.top;
-    sprite.rotation = 90 * Math.PI / 180;
+    birdSprite.flyAnimationRate = 0;
+    // sprite.rotation = 90 * Math.PI / 180;
   }
 
-  function createGroundSprite() {
 
-  }
-  
   function showScore() {
 
   }
@@ -368,8 +398,10 @@
     groundImageHeight = groundImage.height;
     groundImageY = canvasHeight - groundImageHeight;
 
+    createGroundSprite()
     createHosesSprite();
     createBirdSprite();
+
   }
 
   var intervalId = 0;
@@ -383,14 +415,31 @@
   }, 1000)
 
   window.addEventListener('keydown', function (e) {
-    var key = e.keyCode,
-      SLOW_MOTION_RATE = 0.2;
-
+    var key = e.keyCode;
 
     if (key === 74) { // 'j' key
-      birdSprite.jump();
+      if (!game.startFly) {
+        guideDom.style.display = 'none';
+        game.startFly = true;
+        birdSprite.jump();
+      } else {
+        birdSprite.jump();
+      }
     }
   });
+
+  window.addEventListener('touchend', function (e) {
+    if (!birdSprite.isDead) {
+      e.preventDefault();
+    }
+    if (!game.startFly) {
+      guideDom.style.display = 'none';
+      game.startFly = true;
+      birdSprite.jump();
+    } else {
+      birdSprite.jump();
+    }
+  })
 
 
 })()

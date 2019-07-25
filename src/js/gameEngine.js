@@ -21,7 +21,6 @@ var Game = function (gameName, canvasId) {
 
    // Image loading
    
-   this.imageLoadingProgressCallback;
    this.images = {};
    this.imageUrls = [];
    this.imagesLoaded = 0;
