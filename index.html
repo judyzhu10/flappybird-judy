@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<meta>
   <meta charset="UTF-8">
   <title>Title</title>
+  <meta name="viewport" id="viewport" content="width=device-width,height=device-height,user-scalable=no"></meta>
   <link rel="stylesheet" href="src/css/style.css">
 </head>
 <body>
   <div class="container">
+    <div class="loading" id="loading">Loading...</div>
     <div class="guide" id="guide"></div>
     <div class="restart" id="restart"></div>
     <canvas id="canvas" width="900" height="1396">抱歉您的手机不支持canvas,这边建议您换台新手机</canvas>
-    <!--<video id="advertisement-video" src="xx"></video>-->
+    <video id="advertisement-video" class="video" src="src/images/guideVedio.mov" width="900" height="1396" autoplay controls="controls" muted></video>
   </div>
   <script src="src/js/requestNextAnimationFrame.js"></script>
   <script src="src/js/gameEngine.js"></script>

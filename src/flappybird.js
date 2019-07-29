@@ -9,13 +9,198 @@
   const canvasHeight = canvasDom.height;
   const restartDom = document.getElementById('restart');
   const guideDom = document.getElementById('guide');
-  
-  restartDom.addEventListener('click', handleRestart);
+  const videoDom = document.getElementById('advertisement-video');
+  const loadingDom = document.getElementById('loading');
+  const viewportDom = document.getElementById('viewport');
 
-
+  /* 常量开始 */
   const BACK_GROUND_VELOCITY  = 300;
+  var FLY_ANIMATION_RATE = 30;
 
-  // const ctx = canvasDom.getContext('2d');
+  var HOSE_SPACING_X = 300;
+  var HOSE_SPACING_Y = 240;
+  var NUMBER_HOSES = 4;
+  var HOSE_BOX_WIDTH = 148 + HOSE_SPACING_X;
+  var HOSE_WIDTH = 148;
+
+  var HOSE_DOWN_RECT = [10, 0, 148, 802];
+  var HOSE_UP_RECT = [160, 820, 148, 802];
+
+  var BIRD_WIDTH = 87;
+  var BIRD_HEIGHT = 60;
+  var BIRD_LEFT = 80;
+
+  var SCORE_TOP = 50;
+
+  var FONT = '60px Georgia';
+
+  var BIRD_CELLS = [
+    {top: 0, left: 0, width: BIRD_WIDTH, height: BIRD_HEIGHT},
+    {top: BIRD_HEIGHT, left: 0, width: BIRD_WIDTH, height: BIRD_HEIGHT},
+    {top: BIRD_HEIGHT * 2, left: 0, width: BIRD_WIDTH, height: BIRD_HEIGHT},
+  ];
+
+  var TEXT_CELLS = {
+    1: [
+      {
+        text: '误入水管群的小鸟',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '需要从间隙中穿行',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      }
+    ],
+    2: [
+      {
+        text: '稍有不慎',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '就会被水管撞晕在地（成了烧烤店的烤物）',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '（成了烧烤店的烤物）',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      }
+    ],
+    3: [
+      {
+        text: '（成了烧烤店的烤物）',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '（成了烧烤店的烤物）',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '而我们要做的！',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '点击屏幕指引小鸟',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '顺利通过障碍',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      }
+    ],
+    4: [
+      {
+        text: '点 点',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '点',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '点！',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      }
+    ],
+    5: [
+      {
+        text: '紧急！！！',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '小鸟迷茫了！！！',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '该你出手了！',
+        x: 10,
+        y: 20,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      }
+    ],
+  };
+
+  /* 常量结束 */
+
+
+
+  /* 变量开始 */
+
+  // 图片宽高
+  var bgImageWidth, bgImageHeight, groundImageWidth, groundImageHeight, groundImageY;
+
+  var lastAdvanceTime = 0;
+
+  var hoseSpriteList = [];
+  var score = 0;
+
+  var videoEnd = false;
+
+  var firstTime = true;
+  /* 变量结束 */
+
+
 
   const imgList = ['./src/images/bg.png', './src/images/ground.png', './src/images/holdback.png', './src/images/bird.png'];
 
@@ -30,34 +215,6 @@
   const hoseImage = game.getImage(imgList[2]);
   const birdImage = game.getImage(imgList[3]);
 
-  // 图片宽高
-  var bgImageWidth, bgImageHeight, groundImageWidth, groundImageHeight, groundImageY;
-
-  var FLY_ANIMATION_RATE = 30;
-
-  var lastAdvanceTime = 0;
-
-  /* 水管区域开始 */
-
-  var hoseSpacingX = 300;
-  var hoseSpacingY = 240;
-  var numHoses = 4;
-  var hoseBoxWidth = 148 + hoseSpacingX;
-  var hoseWidth = 148;
-
-  var hoseSpriteList = [];
-  var HOSE_DOWN_RECT = [10, 0, 148, 802];
-  var HOSE_UP_RECT = [160, 820, 148, 802];
-
-  var BIRD_WIDTH = 87;
-  var BIRD_HEIGHT = 60;
-  var BIRD_LEFT = 80;
-
-  var score = 0;
-
-  var SCORE_TOP = 50;
-
-  var FONT = '60px Georgia';
 
   game.context.font = FONT;
   game.context.fillStyle = 'black';
@@ -65,30 +222,24 @@
   game.startFly = false;
 
 
-  var birdCells = [
-    {top: 0, left: 0, width: BIRD_WIDTH, height: BIRD_HEIGHT},
-    {top: BIRD_HEIGHT, left: 0, width: BIRD_WIDTH, height: BIRD_HEIGHT},
-    {top: BIRD_HEIGHT * 2, left: 0, width: BIRD_WIDTH, height: BIRD_HEIGHT},
-  ];
-
-  // const $video = document.getElementById('advertisement-video');
-
-  // 进来先加载游戏东西，有进度条加载完毕开始播放视频
-
-  // 视频进度监听
-  // $video.addEventListener('timeupdate', handleTimeupdate);
-
-  // 结束时 初始化游戏状态 并添加求求小鸟号召
-
-  // 监听touchend事件，触发gamestart
-
-  // 接下来就是游戏的事了
-
-  // const handleTimeupdate = (timeupdate) => {
-  //
-  // }
-  
   // 游戏重新开始
+
+  function calculateViewportScale() {
+    var scale = 0;
+    var clientWidth = document.documentElement.clientWidth;
+    var clientHeight = document.documentElement.clientHeight;
+    var scaleWidth = clientWidth / canvasWidth;
+    var scaleHeight = clientHeight / canvasHeight;
+    if (scaleWidth < scaleHeight) {
+      scale = scaleWidth;
+    } else {
+      scale = scaleHeight;
+    }
+    scale = scale.toFixed(2);
+    viewportDom.content = "width=device-width,height=device-height,initial-scale=" + scale + ",user-scalable=no";
+  }
+
+  calculateViewportScale();
   
   function handleRestart() {
     restartDom.style.display = 'none';
@@ -99,22 +250,43 @@
     initBirdSprite();
     initHosesSprite();
   }
-  
-  // 绘制背景图片
-  function paintBackGround () {
-    game.context.drawImage(bgImage, 0, 0, bgImageWidth, bgImageHeight, 0, 0, canvasWidth, canvasHeight);
+
+  function handleBirdDead(sprite) {
+    sprite.isDead = true;
+    sprite.lastUpAnimation = game.getTime();
+    sprite.flyStartY = sprite.top;
+    birdSprite.flyAnimationRate = 0;
+    // sprite.rotation = 90 * Math.PI / 180;
   }
 
-  // 绘制分数
-  function paintScore() {
-    var textWidth = game.context.measureText(score).width;
-    var left = (canvasWidth / 2) - textWidth;
-    game.context.fillText(score, left - 1, SCORE_TOP - 1);
-    game.context.strokeText(score, left, SCORE_TOP);
+  // 判断水管是否在视窗外
+  function isHoseInView (hoseSprint, sprite) {
+    if ((hoseSprint.left + hoseSprint.width) < sprite.hoseOffsetX) {
+      return false
+    }
+    return true
   }
 
-  // 绘制地板
-  var updateGroundOffsetX = {
+  // FIXME 底下的管子长度好像受限制了
+  function randomHeight() {
+    var height = {};
+    //下面障碍在y轴的最上的位置 58为管子头部
+    var downMaxY = groundImageY - (groundImageY - HOSE_SPACING_Y - 68);
+
+    //下面障碍在y轴的最下的位置
+    var downMinY = groundImageY - 68;
+
+    //在downMinY和downMaxY之间随机位置
+    height.downY = downMinY + (downMaxY - downMinY) * Math.random();
+    // height.downY = downMinY + (downMaxY - downMinY) * Math.random() >> 0;
+    height.upY = height.downY - HOSE_SPACING_Y;
+    return height;
+  }
+
+  /* Behavior 开始 */
+
+  // ground移动
+  var updateGroundOffsetXBehavior = {
      execute: function (sprite, context, time) {
       const diffTime = time - game.lastTime;
       const stretch = diffTime * BACK_GROUND_VELOCITY / 1000;
@@ -127,87 +299,7 @@
     }
   }
 
-  var paintGround = {
-    paint: function (sprite, ctx) {
-      // 下水管
-      ctx.save();
-      ctx.translate(- sprite.backgroundOffsetX, 0);
-      ctx.drawImage(groundImage, 0, 0, groundImageWidth, groundImageHeight, 0, groundImageY, canvasWidth, groundImageHeight);
-      ctx.drawImage(groundImage, 0, 0, groundImageWidth, groundImageHeight, canvasWidth, groundImageY, canvasWidth, groundImageHeight);
-      ctx.restore();
-    }
-  }
-
-
-  // FIXME 此处的管子高度可能有问题
-  var paintHose = {
-    paint: function (sprite, ctx) {
-      ctx.rect(0, 0, 20, 20);
-      ctx.save();
-      ctx.translate(- hosesSprite.hoseOffsetX, 0);
-      // 上水管
-      ctx.drawImage(hoseImage, HOSE_UP_RECT[0], HOSE_UP_RECT[1], HOSE_UP_RECT[2], - sprite.height.upY, sprite.left, sprite.top, sprite.width, sprite.height.upY);
-      // 下水管
-      ctx.drawImage(hoseImage, HOSE_DOWN_RECT[0], HOSE_DOWN_RECT[1], HOSE_DOWN_RECT[2], groundImageY - sprite.height.downY, sprite.left, sprite.height.downY, sprite.width, groundImageY - sprite.height.downY);
-      ctx.restore();
-    }
-  }
-
-  // 判断水管是否在视窗外
-  function isHoseInView (hoseSprint, sprite) {
-      if ((hoseSprint.left + hoseSprint.width) < sprite.hoseOffsetX) {
-        return false
-      }
-      return true
-  }
-
-  // FIXME 底下的管子长度好像受限制了
-  function randomHeight() {
-    var height = {};
-    //下面障碍在y轴的最上的位置 58为管子头部
-    var downMaxY =  groundImageY - hoseSpacingY - 58;
-
-    //下面障碍在y轴的最下的位置
-    var downMinY = groundImageY - 58;
-
-    //在downMinY和downMaxY之间随机位置
-    height.downY = downMinY + (downMaxY - downMinY) * Math.random() >> 0;
-    height.upY = height.downY - hoseSpacingY;
-    return height;
-  }
-
-  // 更新管子，在第一根移出时就移动到队尾
-  var updateHoses = {
-
-    execute: function (sprite, ctx, time) {
-      if (game.lastTime === 0 || birdSprite.isDead || !game.startFly) return
-      const diffTime = time - game.lastTime;
-      const stretch = diffTime * BACK_GROUND_VELOCITY / 1000;
-
-      sprite.hoseOffsetX += stretch;
-
-      if (!isHoseInView(hoseSpriteList[0], sprite)) {
-        score++;
-        var outHose = hoseSpriteList.shift();
-        outHose.left = outHose.left + hoseBoxWidth * numHoses;
-        outHose.height = randomHeight();
-        hoseSpriteList.push(outHose);
-      }
-    }
-  }
-
-  var paintHoses = {
-    paint: function (sprite, ctx) {
-      for (var i = 0; i < hoseSpriteList.length; i++) {
-        hoseSpriteList[i].paint(ctx);
-      }
-    }
-  }
-
-  /* 水管区域结束 */
-
-  /* 主角区域开始 */
-
+  // bird飞翔图片切换
   var flyBehavior = {
     execute: function (sprite, ctx, time) {
       if (sprite.flyAnimationRate === 0 || game.lastTime === 0) {
@@ -223,6 +315,7 @@
     }
   };
 
+  // bird向上飞
   var jumpBehavior = {
     execute: function (sprite, ctx, time) {
       if (sprite.isDead || !game.startFly) return
@@ -234,8 +327,8 @@
       if (y <= groundImageY) {
         sprite.top = y;
         if(distance > 0 && !sprite.isUp){
-        //   往上飞时，角度上仰20度
-        //   sprite.rotation = -(20 * Math.PI / 180);
+          //   往上飞时，角度上仰20度
+          //   sprite.rotation = -(20 * Math.PI / 180);
           sprite.isUp = true;
         }else if(distance < 0 && sprite.isUp){
           // 往下跌落时，角度往下90度
@@ -249,6 +342,7 @@
     }
   };
 
+  // bird下落
   var fallBehavior = {
     execute: function (sprite, ctx, time) {
       if (!sprite.isDead || !game.startFly) return
@@ -266,6 +360,7 @@
     }
   }
 
+  // bird碰撞
   var collideBehavior = {
     isCollide: function (rect1, rect2) {
       if(rect1.left < rect2.left + rect2.width &&
@@ -292,36 +387,118 @@
     }
   }
 
-  // var fallBehavior = {
-  //   execute: function (sprite, ctx, time) {
-  //
-  //   }
-  // }
+  // 水管移动
+  var updateHosesBehavior = {
+
+    execute: function (sprite, ctx, time) {
+      if (game.lastTime === 0 || birdSprite.isDead || !game.startFly) return
+      const diffTime = time - game.lastTime;
+      const stretch = diffTime * BACK_GROUND_VELOCITY / 1000;
+
+      sprite.hoseOffsetX += stretch;
+
+      if (!isHoseInView(hoseSpriteList[0], sprite)) {
+        score++;
+        var outHose = hoseSpriteList.shift();
+        outHose.left = outHose.left + HOSE_BOX_WIDTH * NUMBER_HOSES;
+        outHose.height = randomHeight();
+        hoseSpriteList.push(outHose);
+      }
+    }
+  }
+
+  /* Behavior 结束 */
 
 
-  // 精灵对象
+
+  /* paint 开始 */
+
+  // 绘制背景图片
+  function paintBackGround () {
+    game.context.drawImage(bgImage, 0, 0, bgImageWidth, bgImageHeight, 0, 0, canvasWidth, canvasHeight);
+  }
+
+  // 绘制分数
+  function paintScore() {
+    var textWidth = game.context.measureText(score).width;
+    var left = (canvasWidth / 2) - textWidth;
+    game.context.fillText(score, left - 1, SCORE_TOP - 1);
+    game.context.strokeText(score, left, SCORE_TOP);
+  }
+
+  // 绘制视频
+  function paintVideoGuide() {
+    const ctx = game.context;
+    // FIXME 视频的大小
+    ctx.drawImage(videoDom, 0, 0, 300, 470, 0, 0, canvasHeight, canvasWidth );
+    var textList = TEXT_CELLS[Math.floor(videoDom.currentTime)] || [];
+
+    // 渲染在视频上的引导文字
+    textList.forEach(function (item) {
+      ctx.save();
+      ctx.fillStyle = item.fillStyle;
+      ctx.font = item.font;
+      ctx.fillText(item.text, item.x, item.y);
+      ctx.restore();
+    })
+  }
+
+  // 绘制地板
+  var paintGround = {
+    paint: function (sprite, ctx) {
+      // 下水管
+      ctx.save();
+      ctx.translate(- sprite.backgroundOffsetX, 0);
+      ctx.drawImage(groundImage, 0, 0, groundImageWidth, groundImageHeight, 0, groundImageY, canvasWidth, groundImageHeight);
+      ctx.drawImage(groundImage, 0, 0, groundImageWidth, groundImageHeight, canvasWidth, groundImageY, canvasWidth, groundImageHeight);
+      ctx.restore();
+    }
+  }
+
+  // 绘制水管
+  var paintHose = {
+    paint: function (sprite, ctx) {
+      ctx.rect(0, 0, 20, 20);
+      ctx.save();
+      ctx.translate(- hosesSprite.hoseOffsetX, 0);
+      // 上水管
+      ctx.drawImage(hoseImage, HOSE_UP_RECT[0], HOSE_UP_RECT[1], HOSE_UP_RECT[2], - sprite.height.upY, sprite.left, sprite.top, sprite.width, sprite.height.upY);
+      // 下水管
+      ctx.drawImage(hoseImage, HOSE_DOWN_RECT[0], HOSE_DOWN_RECT[1], HOSE_DOWN_RECT[2], groundImageY - sprite.height.downY, sprite.left, sprite.height.downY, sprite.width, groundImageY - sprite.height.downY);
+      ctx.restore();
+    }
+  }
+
+  // 更新管子，在第一根移出时就移动到队尾
+
+  var paintHoses = {
+    paint: function (sprite, ctx) {
+      for (var i = 0; i < hoseSpriteList.length; i++) {
+        hoseSpriteList[i].paint(ctx);
+      }
+    }
+  }
+
+  /* paint 结束 */
+
+
+
+
+  /* 精灵对象开始 */
 
   // 水管群
-  var hosesSprite = new Sprite('hosesSprite', paintHoses, [updateHoses]);
+  var hosesSprite = new Sprite('hosesSprite', paintHoses, [updateHosesBehavior]);
 
   // 地板
-  var groundSprite = new Sprite('groundSprite', paintGround, [updateGroundOffsetX]);
+  var groundSprite = new Sprite('groundSprite', paintGround, [updateGroundOffsetXBehavior]);
 
-  // var birdSprite = new Sprite('birdSprite', new SpriteSheetArtist(birdImage, birdCells), [runBehavior, jumpBehavior, fallBehavior]);
-  var birdSprite = new Sprite('birdSprite', new SpriteSheetArtist(birdImage, birdCells), [flyBehavior, jumpBehavior, collideBehavior, fallBehavior]);
+  // 鸟
+  var birdSprite = new Sprite('birdSprite', new SpriteSheetArtist(birdImage, BIRD_CELLS), [flyBehavior, jumpBehavior, collideBehavior, fallBehavior]);
 
-
-  game.paintUnderSprites = function() {
-    paintBackGround();
-  }
-
-  game.paintOverSprites = function () {
-    paintScore();
-  }
+  /* 精灵对象结束 */
 
 
-
-  game.start();
+  /* 精灵对象初始化开始 */
 
   function initGround() {
     groundSprite.backgroundOffsetX = 0;
@@ -330,13 +507,13 @@
   function initHosesSprite() {
     hoseSpriteList = [];
     hosesSprite.hoseOffsetX = 0;
-    for (var i = 0; i < numHoses; i++) {
+    for (var i = 0; i < NUMBER_HOSES; i++) {
       var name = 'hose' + i;
       var hoseSprite = new Sprite(name, paintHose);
       hoseSprite.height = randomHeight();
       // 第一个管子在视窗后一个
-      hoseSprite.left = canvasWidth + hoseBoxWidth * (i + 1);
-      hoseSprite.width = hoseWidth;
+      hoseSprite.left = canvasWidth + HOSE_BOX_WIDTH * (i + 1);
+      hoseSprite.width = HOSE_WIDTH;
       hoseSprite.top = 0;
       hoseSpriteList.push(hoseSprite);
     }
@@ -362,34 +539,9 @@
     }
   }
 
-  function createHosesSprite() {
-    initHosesSprite();
-    game.addSprite(hosesSprite);
-  }
+  /* 精灵对象初始化结束 */
 
-  function createBirdSprite() {
-    initBirdSprite();
-    game.addSprite(birdSprite);
-  }
-
-  function createGroundSprite() {
-    initGround();
-    game.addSprite(groundSprite);
-  }
-
-  function handleBirdDead(sprite) {
-    sprite.isDead = true;
-    sprite.lastUpAnimation = game.getTime();
-    sprite.flyStartY = sprite.top;
-    birdSprite.flyAnimationRate = 0;
-    // sprite.rotation = 90 * Math.PI / 180;
-  }
-
-
-  function showScore() {
-
-  }
-
+  // 图片宽高赋值
   function init() {
     bgImageWidth = bgImage.width;
     bgImageHeight = bgImage.height;
@@ -397,23 +549,13 @@
     groundImageWidth = groundImage.width;
     groundImageHeight = groundImage.height;
     groundImageY = canvasHeight - groundImageHeight;
-
-    createGroundSprite()
-    createHosesSprite();
-    createBirdSprite();
-
   }
 
-  var intervalId = 0;
-  intervalId = setInterval(function () {
-    var progress = game.loadImages();
-    if (progress === 100) {
-      clearInterval(intervalId);
-      init();
-      game.start();
-    }
-  }, 1000)
 
+  // 监听重新开始
+  restartDom.addEventListener('click', handleRestart);
+
+  // 监听j
   window.addEventListener('keydown', function (e) {
     var key = e.keyCode;
 
@@ -428,17 +570,73 @@
     }
   });
 
-  window.addEventListener('touchend', function (e) {
+  // iphone xs兼容性有点问题
+  window.addEventListener('touchstart', function (e) {
+    // 在小鸟飞行时防止页面放大
     if (!birdSprite.isDead) {
       e.preventDefault();
     }
+
+    // 在视频没播放结束前点击事件无效
+    if (!videoEnd) return
+
+    // 游戏首次是和视频衔接的所以要特殊处理
+    if (firstTime) {
+      game.paintUnderSprites = paintBackGround;
+
+      game.paintOverSprites =  paintScore;
+
+      // 将水管、地板、鸟三个精灵对象加入游戏引擎
+      game.addSprite(groundSprite);
+      game.addSprite(hosesSprite);
+      game.addSprite(birdSprite);
+
+      firstTime = false;
+
+      // game.startFly字段是用于区分在等待飞行和正在飞行
+      game.startFly = true;
+    }
+
+    // 从等待区进入是需先移除等待图片
     if (!game.startFly) {
       guideDom.style.display = 'none';
       game.startFly = true;
-      birdSprite.jump();
-    } else {
-      birdSprite.jump();
     }
+
+    // 小鸟向上飞行一次
+    birdSprite.jump();
+  })
+
+  // 监听视频播放
+  videoDom.addEventListener('playing', function () {
+    console.log('a');
+    loadingDom.style.display = 'none';
+    game.paintUnderSprites = paintVideoGuide;
+    game.start();
+  })
+
+  // 监听视频播放结束
+  videoDom.addEventListener('ended', function () {
+    videoEnd = true;
+    // 初始化图片大小
+    init();
+
+    initHosesSprite();
+    initGround();
+    initBirdSprite();
+
+    // bird对象重置参数与视频相等；
+    // birdSprite.flyStartY = groundImageY / 2;
+    // birdSprite.top = birdSprite.flyStartY;
+    // birdSprite.lastUpAnimation = game.getTime();
+
+    // 地板重置
+    // groundSprite.backgroundOffsetX = 0;
+
+    // 水管重置
+    // hosesSprite.hoseOffsetX = 0;
+    // hoseSpriteList = ;
+
   })
 
 
