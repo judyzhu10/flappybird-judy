@@ -222,8 +222,8 @@
   game.startFly = false;
 
 
-  // 游戏重新开始
 
+  // 游戏缩放
   function calculateViewportScale() {
     var scale = 0;
     var clientWidth = document.documentElement.clientWidth;
@@ -551,6 +551,12 @@
     groundImageY = canvasHeight - groundImageHeight;
   }
 
+  loadingDom.addEventListener('click', function (ev) {
+    loadingDom.style.display = 'none';
+    game.paintUnderSprites = paintVideoGuide;
+    game.start();
+    videoDom.play();
+  })
 
   // 监听重新开始
   restartDom.addEventListener('click', handleRestart);
@@ -608,11 +614,8 @@
   })
 
   // 监听视频播放
-  videoDom.addEventListener('playing', function () {
-    console.log('a');
-    loadingDom.style.display = 'none';
-    game.paintUnderSprites = paintVideoGuide;
-    game.start();
+  videoDom.addEventListener('canplaythrough', function () {
+    loadingDom.innerText = '查看介绍';
   })
 
   // 监听视频播放结束
