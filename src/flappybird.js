@@ -40,20 +40,23 @@
     {top: BIRD_HEIGHT * 2, left: 0, width: BIRD_WIDTH, height: BIRD_HEIGHT},
   ];
 
+  var first = true;
+
+  var TEXT_CELLS = {};
   var TEXT_CELLS = {
     1: [
       {
         text: '误入水管群的小鸟',
-        x: 10,
-        y: 20,
+        x: 100,
+        y: 300,
         font: '60px Georgia',
         fillStyle: 'black',
         strokeStyle: 'yellow',
       },
       {
         text: '需要从间隙中穿行',
-        x: 10,
-        y: 20,
+        x: 400,
+        y: 500,
         font: '60px Georgia',
         fillStyle: 'black',
         strokeStyle: 'yellow',
@@ -61,9 +64,27 @@
     ],
     2: [
       {
+        text: '误入水管群的小鸟',
+        x: 100,
+        y: 300,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '需要从间隙中穿行',
+        x: 400,
+        y: 500,
+        font: '60px Georgia',
+        fillStyle: 'black',
+        strokeStyle: 'yellow',
+      }
+    ],
+    3: [
+      {
         text: '稍有不慎',
-        x: 10,
-        y: 20,
+        x: 300,
+        y: 400,
         font: '60px Georgia',
         fillStyle: 'black',
         strokeStyle: 'yellow',
@@ -181,7 +202,7 @@
     ],
   };
 
-  /* 常量结束 */
+  // /* 常量结束 */
 
 
 
@@ -256,7 +277,7 @@
     sprite.lastUpAnimation = game.getTime();
     sprite.flyStartY = sprite.top;
     birdSprite.flyAnimationRate = 0;
-    // sprite.rotation = 90 * Math.PI / 180;
+    sprite.rotation = 90 * Math.PI / 180;
   }
 
   // 判断水管是否在视窗外
@@ -271,10 +292,10 @@
   function randomHeight() {
     var height = {};
     //下面障碍在y轴的最上的位置 58为管子头部
-    var downMaxY = groundImageY - (groundImageY - HOSE_SPACING_Y - 68);
+    var downMaxY = groundImageY - (groundImageY - HOSE_SPACING_Y - 100);
 
     //下面障碍在y轴的最下的位置
-    var downMinY = groundImageY - 68;
+    var downMinY = groundImageY - 100;
 
     //在downMinY和downMaxY之间随机位置
     height.downY = downMinY + (downMaxY - downMinY) * Math.random();
@@ -302,6 +323,10 @@
   // bird飞翔图片切换
   var flyBehavior = {
     execute: function (sprite, ctx, time) {
+      // if (score === 6 && hoseSpriteList[0].left - hosesSprite.hoseOffsetX < birdSprite.left + birdSprite.width && first) {
+      //   first = false;
+      //   game.togglePaused();
+      // }
       if (sprite.flyAnimationRate === 0 || game.lastTime === 0) {
         return;
       }
@@ -415,7 +440,7 @@
 
   // 绘制背景图片
   function paintBackGround () {
-    game.context.drawImage(bgImage, 0, 0, bgImageWidth, bgImageHeight, 0, 0, canvasWidth, canvasHeight);
+    // game.context.drawImage(bgImage, 0, 0, bgImageWidth, bgImageHeight, 0, 0, canvasWidth, canvasHeight);
   }
 
   // 绘制分数
@@ -429,8 +454,7 @@
   // 绘制视频
   function paintVideoGuide() {
     const ctx = game.context;
-    // FIXME 视频的大小
-    ctx.drawImage(videoDom, 0, 0, 300, 470, 0, 0, canvasHeight, canvasWidth );
+    ctx.drawImage(videoDom, 0, 0, videoDom.videoWidth, videoDom.videoHeight, 0, 0, canvasWidth, canvasHeight);
     var textList = TEXT_CELLS[Math.floor(videoDom.currentTime)] || [];
 
     // 渲染在视频上的引导文字
@@ -628,17 +652,36 @@
     initGround();
     initBirdSprite();
 
-    // bird对象重置参数与视频相等；
-    // birdSprite.flyStartY = groundImageY / 2;
-    // birdSprite.top = birdSprite.flyStartY;
-    // birdSprite.lastUpAnimation = game.getTime();
+    birdSprite.flyStartY = 394.2955624232252;
+    birdSprite.isDead = false;
+    birdSprite.isUp = true;
+    birdSprite.lastUpAnimation = 1564418990056;
+    birdSprite.top = 394.2955624232252;
+
 
     // 地板重置
-    // groundSprite.backgroundOffsetX = 0;
+    groundSprite.backgroundOffsetX = 260.1;
 
     // 水管重置
-    // hosesSprite.hoseOffsetX = 0;
-    // hoseSpriteList = ;
+    hosesSprite.hoseOffsetX = 3869.7000000000035;
+
+    hoseSpriteList[0].height = {downY: 546.3124279722448, upY: 306.3124279722448};
+    hoseSpriteList[0].left = 4036;
+    hoseSpriteList[0].type = "hose2";
+
+    hoseSpriteList[1].height = {downY: 340.8986725298381, upY: 100.89867252983811};
+    hoseSpriteList[1].left = 4484;
+    hoseSpriteList[1].type = "hose3";
+
+    hoseSpriteList[2].height = {downY: 829.8579720183818, upY: 589.8579720183818};
+    hoseSpriteList[2].left = 4932;
+    hoseSpriteList[2].type = "hose0";
+
+    hoseSpriteList[3].height = {downY: 857.0577861037434, upY: 617.0577861037434};
+    hoseSpriteList[3].left = 5380;
+    hoseSpriteList[3].type = "hose2";
+
+    score = 6;
 
   })
 

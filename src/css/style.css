@@ -2,10 +2,12 @@ body {
     margin: 0;
     width: 900px;
     height: 1396px;
+    overflow: hidden;
 }
 
 .container {
     position: relative;
+    background: url("../images/bg.png") center/cover no-repeat;
 }
 
 .loading {
