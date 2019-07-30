@@ -7,7 +7,8 @@ body {
 
 .container {
     position: relative;
-    background: url("../images/bg.png") center/cover no-repeat;
+    height: 1396px;
+    background: url("https://flappybird-judy.oss-cn-shanghai.aliyuncs.com/bg.png") center/cover no-repeat;
 }
 
 .loading {
@@ -35,7 +36,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: url("../images/ready.png") center/contain no-repeat;
+    background: url("https://flappybird-judy.oss-cn-shanghai.aliyuncs.com/ready.png") center/contain no-repeat;
     z-index: 50;
 }
 
@@ -46,7 +47,7 @@ body {
     transform: translate(-50%, -50%);
     width:30%;
     height: 9%;
-    background: url("../images/restart.png") center/cover no-repeat;
+    background: url("https://flappybird-judy.oss-cn-shanghai.aliyuncs.com/restart.png") center/cover no-repeat;
     z-index: 100;
     border-radius: 10%;
     border: solid 1px black;

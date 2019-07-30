@@ -40,13 +40,10 @@
     {top: BIRD_HEIGHT * 2, left: 0, width: BIRD_WIDTH, height: BIRD_HEIGHT},
   ];
 
-  var first = true;
-
-  var TEXT_CELLS = {};
   var TEXT_CELLS = {
     1: [
       {
-        text: '误入水管群的小鸟',
+        text: '这本是一只快乐的小鸟',
         x: 100,
         y: 300,
         font: '60px Georgia',
@@ -54,7 +51,7 @@
         strokeStyle: 'yellow',
       },
       {
-        text: '需要从间隙中穿行',
+        text: '迷失了方向',
         x: 400,
         y: 500,
         font: '60px Georgia',
@@ -64,7 +61,7 @@
     ],
     2: [
       {
-        text: '误入水管群的小鸟',
+        text: '误入水管群中',
         x: 100,
         y: 300,
         font: '60px Georgia',
@@ -78,71 +75,45 @@
         font: '60px Georgia',
         fillStyle: 'black',
         strokeStyle: 'yellow',
-      }
-    ],
-    3: [
+      },
       {
-        text: '稍有不慎',
-        x: 300,
-        y: 400,
-        font: '60px Georgia',
+        text: '稍有不慎，就会被水管撞晕',
+        x: 256,
+        y: 800,
+        font: '50px Georgia',
         fillStyle: 'black',
         strokeStyle: 'yellow',
       },
-      {
-        text: '就会被水管撞晕在地（成了烧烤店的烤物）',
-        x: 10,
-        y: 20,
-        font: '60px Georgia',
-        fillStyle: 'black',
-        strokeStyle: 'yellow',
-      },
-      {
-        text: '（成了烧烤店的烤物）',
-        x: 10,
-        y: 20,
-        font: '60px Georgia',
-        fillStyle: 'black',
-        strokeStyle: 'yellow',
-      }
     ],
     3: [
       {
         text: '（成了烧烤店的烤物）',
-        x: 10,
-        y: 20,
-        font: '60px Georgia',
-        fillStyle: 'black',
-        strokeStyle: 'yellow',
-      },
-      {
-        text: '（成了烧烤店的烤物）',
-        x: 10,
-        y: 20,
+        x: 200,
+        y: 200,
         font: '60px Georgia',
         fillStyle: 'black',
         strokeStyle: 'yellow',
       },
       {
         text: '而我们要做的！',
-        x: 10,
-        y: 20,
+        x: 400,
+        y: 400,
         font: '60px Georgia',
         fillStyle: 'black',
         strokeStyle: 'yellow',
       },
       {
         text: '点击屏幕指引小鸟',
-        x: 10,
-        y: 20,
+        x: 200,
+        y: 666,
         font: '60px Georgia',
         fillStyle: 'black',
         strokeStyle: 'yellow',
       },
       {
         text: '顺利通过障碍',
-        x: 10,
-        y: 20,
+        x: 500,
+        y: 800,
         font: '60px Georgia',
         fillStyle: 'black',
         strokeStyle: 'yellow',
@@ -151,56 +122,80 @@
     4: [
       {
         text: '点 点',
-        x: 10,
-        y: 20,
-        font: '60px Georgia',
-        fillStyle: 'black',
+        x: 80,
+        y: 666,
+        font: '77px Georgia',
+        fillStyle: 'red',
         strokeStyle: 'yellow',
       },
       {
         text: '点',
-        x: 10,
-        y: 20,
-        font: '60px Georgia',
-        fillStyle: 'black',
+        x: 120,
+        y: 999,
+        font: '100px Georgia',
+        fillStyle: 'yellow',
         strokeStyle: 'yellow',
       },
       {
         text: '点！',
-        x: 10,
-        y: 20,
-        font: '60px Georgia',
-        fillStyle: 'black',
+        x: 80,
+        y: 1150,
+        font: '50px Georgia',
+        fillStyle: 'red',
         strokeStyle: 'yellow',
       }
     ],
     5: [
       {
         text: '紧急！！！',
-        x: 10,
-        y: 20,
+        x: 200,
+        y: 500,
         font: '60px Georgia',
-        fillStyle: 'black',
+        fillStyle: 'yellow',
         strokeStyle: 'yellow',
       },
       {
         text: '小鸟迷茫了！！！',
-        x: 10,
-        y: 20,
+        x: 300,
+        y: 200,
         font: '60px Georgia',
         fillStyle: 'black',
         strokeStyle: 'yellow',
       },
       {
         text: '该你出手了！',
-        x: 10,
-        y: 20,
+        x: 344,
+        y: 700,
         font: '60px Georgia',
-        fillStyle: 'black',
+        fillStyle: 'red',
+        strokeStyle: 'yellow',
+      },
+      {
+        text: '快轻点一下屏幕',
+        x: 244,
+        y: 1000,
+        font: '80px Georgia',
+        fillStyle: 'red',
         strokeStyle: 'yellow',
       }
     ],
   };
+
+  var TEXT_MAPPING = {
+    1: 1,
+    2: 1,
+    3: 2,
+    4: 2,
+    5: 2,
+    6: 3,
+    7: 3,
+    8: 4,
+    9: 4,
+    10: 4,
+    11: 4,
+    12: 5,
+    13: 5,
+  }
 
   // /* 常量结束 */
 
@@ -299,7 +294,6 @@
 
     //在downMinY和downMaxY之间随机位置
     height.downY = downMinY + (downMaxY - downMinY) * Math.random();
-    // height.downY = downMinY + (downMaxY - downMinY) * Math.random() >> 0;
     height.upY = height.downY - HOSE_SPACING_Y;
     return height;
   }
@@ -323,10 +317,6 @@
   // bird飞翔图片切换
   var flyBehavior = {
     execute: function (sprite, ctx, time) {
-      // if (score === 6 && hoseSpriteList[0].left - hosesSprite.hoseOffsetX < birdSprite.left + birdSprite.width && first) {
-      //   first = false;
-      //   game.togglePaused();
-      // }
       if (sprite.flyAnimationRate === 0 || game.lastTime === 0) {
         return;
       }
@@ -439,9 +429,6 @@
   /* paint 开始 */
 
   // 绘制背景图片
-  function paintBackGround () {
-    // game.context.drawImage(bgImage, 0, 0, bgImageWidth, bgImageHeight, 0, 0, canvasWidth, canvasHeight);
-  }
 
   // 绘制分数
   function paintScore() {
@@ -455,7 +442,7 @@
   function paintVideoGuide() {
     const ctx = game.context;
     ctx.drawImage(videoDom, 0, 0, videoDom.videoWidth, videoDom.videoHeight, 0, 0, canvasWidth, canvasHeight);
-    var textList = TEXT_CELLS[Math.floor(videoDom.currentTime)] || [];
+    var textList = TEXT_CELLS[TEXT_MAPPING[Math.floor(videoDom.currentTime)]] || [];
 
     // 渲染在视频上的引导文字
     textList.forEach(function (item) {
@@ -612,9 +599,10 @@
 
     // 游戏首次是和视频衔接的所以要特殊处理
     if (firstTime) {
-      game.paintUnderSprites = paintBackGround;
-
       game.paintOverSprites =  paintScore;
+      game.paintUnderSprites = function () {
+        
+      }
 
       // 将水管、地板、鸟三个精灵对象加入游戏引擎
       game.addSprite(groundSprite);
@@ -684,6 +672,5 @@
     score = 6;
 
   })
-
 
 })()
